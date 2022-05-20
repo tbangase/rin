@@ -6,6 +6,8 @@ use utils::non_zero_init_array;
 use ndarray::{prelude::*, concatenate};
 use getset::{Getters, Setters};
 
+use anyhow::Result;
+
 #[derive(new, Debug, Clone, Default, Getters, Setters)]
 pub struct Perceptron {
     // 学習率: η
@@ -27,7 +29,11 @@ pub struct Perceptron {
 }
 
 impl Perceptron {
-    pub fn fit(&mut self, x: &Array2<f64>, y: &Array1<f64>) -> &mut Self {
+    pub fn fit(&mut self, x: &Array2<f64>, y: &Array1<f64>) -> Result<()> {
+        if x.shape()[1] != y.len() {
+            anyhow::bail!("Training Data of x and Label y has different shape.");
+        }
+
         self.weights = non_zero_init_array(1 + x.shape()[1]);
         self.errors.clear();
 
@@ -50,13 +56,11 @@ impl Perceptron {
             }
             self.errors.push(errors);
         }
-
-        self
+        Ok(())
     } 
 
     pub fn net_input(&self, x: ArrayView1<f64>) -> f64 {
         let expanded_x = concatenate![Axis(0), array![0.], x];
-        println!("Expanded X: {expanded_x:?}\n");
         expanded_x.dot(&self.weights)
     }
 
@@ -74,7 +78,7 @@ mod perceptron_test {
     use super::*;
 
     #[test]
-    fn test_normal_perceptron() {
+    fn test_normal_perceptron() -> Result<()> {
         let mut p = Perceptron::new();
 
         let x = Array2::from(vec![
@@ -84,13 +88,34 @@ mod perceptron_test {
         ]);
         let y = array![1., 1., -1.];
 
-        p.fit(&x, &y);
+        p.fit(&x, &y)?;
 
         assert_eq!(p.predict(x.row(0)),  1.0); 
         assert_eq!(p.predict(x.row(1)),  1.0); 
         assert_eq!(p.predict(x.row(2)), -1.0); 
-
+        Ok(())
     } 
+    
+    #[test]
+    fn test_wrong_size_handling() -> Result<()> {
+        let mut p = Perceptron::new();
+
+        let x = Array2::from(vec![
+            [1., 2., 3.],
+            [4., 5., 6.],
+            [7., 8., 9.],
+        ]);
+        let y = array![
+            1., 1., -1., -1.
+        ];
+
+        match p.fit(&x, &y) {
+            Ok(_) => assert!(false),
+            Err(_) => assert!(true),
+        }
+
+        Ok(())
+    }
 
     #[test]
     fn it_works() {

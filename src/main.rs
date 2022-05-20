@@ -4,7 +4,9 @@ use std::time::Instant;
 use ndarray::prelude::*;
 use rin::{utils::non_zero_init_array, Perceptron};
 
-fn main() {
+fn main() -> anyhow::Result<()> {
+    std::env::set_var("RUST_LOG", "debug");
+    tracing_subscriber::fmt::init();
     let start = Instant::now();
 
     let vector = vec![1., 2., 3.];
@@ -40,12 +42,13 @@ fn main() {
     let array1 = Array1::from_vec(vector);
     let non_zero_array = non_zero_init_array(3);
 
-    println!("{:?}", a);
-    println!("{:?}", b);
-    println!("{:?}", c);
-    println!("{:?}", x);
-    println!("{:?}", array1);
-    println!("{:?}", non_zero_array);
+    tracing::debug!("\n{:?}", a);
+    tracing::debug!("\n{:?}", b);
+    tracing::debug!("\n{:?}", c);
+    tracing::debug!("\n{:?}", x);
+    tracing::debug!("\n{:?}", array1);
+    tracing::debug!("\n{:?}", non_zero_array);
+
 
     let mut p = Perceptron::new()
         .set_learning_rate(0.01)
@@ -60,12 +63,15 @@ fn main() {
 
     let y = arr1(&[1.0, 1.0, -1.0]);
 
-    p.fit(&x, &y);
+    p.fit(&x, &y)?;
 
-    println!("Expect as  1.0: {:?}", p.predict(x.row(0)));
-    println!("Expect as  1.0: {:?}", p.predict(x.row(1)));
-    println!("Expect as -1.0: {:?}", p.predict(x.row(2)));
+    tracing::debug!("\nExpect as  1.0: {:?}", p.predict(x.row(0)));
+    tracing::debug!("\nExpect as  1.0: {:?}", p.predict(x.row(1)));
+    tracing::debug!("\nExpect as -1.0: {:?}", p.predict(x.row(2)));
+
+    tracing::debug!("\n{:?}", p.weights());
 
     let duration = start.elapsed();
-    println!("Rand Init vec Duration: {:?}", duration);
+    tracing::info!("Total Duration: {:?}", duration);
+    Ok(())
 }
