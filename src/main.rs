@@ -2,9 +2,12 @@ extern crate ndarray;
 use std::time::Instant;
 
 use ndarray::prelude::*;
+use rin::{utils::non_zero_init_array, Perceptron};
 
 fn main() {
     let start = Instant::now();
+
+    let vector = vec![1., 2., 3.];
 
     // Not good for definition
     let a = Array::from_vec(
@@ -34,10 +37,34 @@ fn main() {
         [7.0, 8.0, 9.0],
     ]);
 
+    let array1 = Array1::from_vec(vector);
+    let non_zero_array = non_zero_init_array(3);
+
     println!("{:?}", a);
     println!("{:?}", b);
     println!("{:?}", c);
     println!("{:?}", x);
+    println!("{:?}", array1);
+    println!("{:?}", non_zero_array);
+
+    let mut p = Perceptron::new()
+        .set_learning_rate(0.01)
+        .set_train_num(100)
+        .clone();
+
+    let x = arr2(&[
+        [1.0, 2.0, 3.0],
+        [4.0, 5.0, 6.0],
+        [7.0, 8.0, 9.0],
+    ]);
+
+    let y = arr1(&[1.0, 1.0, -1.0]);
+
+    p.fit(&x, &y);
+
+    println!("Expect as  1.0: {:?}", p.predict(x.row(0)));
+    println!("Expect as  1.0: {:?}", p.predict(x.row(1)));
+    println!("Expect as -1.0: {:?}", p.predict(x.row(2)));
 
     let duration = start.elapsed();
     println!("Rand Init vec Duration: {:?}", duration);
