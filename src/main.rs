@@ -2,7 +2,7 @@ extern crate ndarray;
 use std::time::Instant;
 
 use ndarray::prelude::*;
-use rin::{utils::non_zero_init_array, Perceptron};
+use rin::prelude::*;
 
 fn main() -> anyhow::Result<()> {
     std::env::set_var("RUST_LOG", "debug");
