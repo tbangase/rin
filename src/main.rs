@@ -5,39 +5,21 @@ use ndarray::prelude::*;
 use rin::prelude::*;
 
 fn main() -> anyhow::Result<()> {
-    std::env::set_var("RUST_LOG", "debug");
     tracing_subscriber::fmt::init();
     let start = Instant::now();
 
     let vector = vec![1., 2., 3.];
 
     // Not good for definition
-    let a = Array::from_vec(
-        vec![
-            vec![1, 2, 3],
-            vec![4, 5, 6],
-            vec![7, 8],
-        ]
-    );
+    let a = Array::from_vec(vec![vec![1, 2, 3], vec![4, 5, 6], vec![7, 8]]);
 
     // Accurate definition
-    let b = Array::from_shape_vec(
-        (2, 2),
-        vec![1, 2, 3, 4]
-    );
+    let b = Array::from_shape_vec((2, 2), vec![1, 2, 3, 4]);
 
     // Easiest Definition
-    let c = array![
-        [1, 2, 3],
-        [4, 5, 6],
-        [7, 8, 9],
-    ];
+    let c = array![[1, 2, 3], [4, 5, 6], [7, 8, 9],];
 
-    let x = arr2(&[
-        [1.0, 2.0, 3.0],
-        [4.0, 5.0, 6.0],
-        [7.0, 8.0, 9.0],
-    ]);
+    let x = arr2(&[[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]]);
 
     let array1 = Array1::from_vec(vector);
     let non_zero_array = non_zero_init_array(3);
@@ -49,17 +31,12 @@ fn main() -> anyhow::Result<()> {
     tracing::debug!("\n{:?}", array1);
     tracing::debug!("\n{:?}", non_zero_array);
 
+    let mut p = Perceptron::builder()
+        .learning_rate(0.01)
+        .train_num(100)
+        .build();
 
-    let mut p = Perceptron::new()
-        .set_learning_rate(0.01)
-        .set_train_num(100)
-        .clone();
-
-    let x = arr2(&[
-        [1.0, 2.0, 3.0],
-        [4.0, 5.0, 6.0],
-        [7.0, 8.0, 9.0],
-    ]);
+    let x = arr2(&[[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]]);
 
     let y = arr1(&[1.0, 1.0, -1.0]);
 

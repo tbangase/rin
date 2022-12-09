@@ -1,28 +1,24 @@
-use derive_new::new;
-use getset::{Getters, Setters};
+use derive_getters::Getters;
+use typed_builder::TypedBuilder;
 
 use crate::utils::non_zero_init_array;
 
 use anyhow::Result;
-use ndarray::{prelude::*, concatenate};
+use ndarray::{concatenate, prelude::*};
 
-#[derive(new, Debug, Clone, Default, Getters, Setters)]
+#[derive(Debug, Clone, Default, Getters, TypedBuilder)]
 pub struct Perceptron {
     // 学習率: η
-    #[new(value = "0.1")]
-    #[getset(get = "pub", set = "pub")]
+    #[builder(default = 0.1)]
     learning_rate: f64,
     // 訓練回数
-    #[new(value = "50")]
-    #[getset(get = "pub", set = "pub")]
+    #[builder(default = 10)]
     train_num: u32,
     // 重み
-    #[new(default)]
-    #[getset(get = "pub")]
+    #[builder(default)]
     weights: Array1<f64>,
     // 誤差
-    #[new(default)]
-    #[getset(get = "pub")]
+    #[builder(default)]
     errors: Vec<f64>,
 }
 
@@ -55,7 +51,7 @@ impl Perceptron {
             self.errors.push(errors);
         }
         Ok(())
-    } 
+    }
 
     pub fn net_input(&self, x: ArrayView1<f64>) -> f64 {
         let expanded_x = concatenate![Axis(0), array![0.], x];
@@ -77,35 +73,25 @@ mod perceptron_test {
 
     #[test]
     fn test_normal_perceptron() -> Result<()> {
-        let mut p = Perceptron::new();
+        let mut p = Perceptron::builder().build();
 
-        let x = Array2::from(vec![
-            [1., 2., 3.],
-            [4., 5., 6.],
-            [7., 8., 9.],
-        ]);
+        let x = Array2::from(vec![[1., 2., 3.], [4., 5., 6.], [7., 8., 9.]]);
         let y = array![1., 1., -1.];
 
         p.fit(&x, &y)?;
 
-        assert_eq!(p.predict(x.row(0)),  1.0); 
-        assert_eq!(p.predict(x.row(1)),  1.0); 
-        assert_eq!(p.predict(x.row(2)), -1.0); 
+        assert_eq!(p.predict(x.row(0)), 1.0);
+        assert_eq!(p.predict(x.row(1)), 1.0);
+        assert_eq!(p.predict(x.row(2)), -1.0);
         Ok(())
-    } 
-    
+    }
+
     #[test]
     fn test_wrong_size_handling() -> Result<()> {
-        let mut p = Perceptron::new();
+        let mut p = Perceptron::builder().build();
 
-        let x = Array2::from(vec![
-            [1., 2., 3.],
-            [4., 5., 6.],
-            [7., 8., 9.],
-        ]);
-        let y = array![
-            1., 1., -1., -1.
-        ];
+        let x = Array2::from(vec![[1., 2., 3.], [4., 5., 6.], [7., 8., 9.]]);
+        let y = array![1., 1., -1., -1.];
 
         match p.fit(&x, &y) {
             Ok(_) => assert!(false),
@@ -113,11 +99,5 @@ mod perceptron_test {
         }
 
         Ok(())
-    }
-
-    #[test]
-    fn it_works() {
-        let result = 2 + 2;
-        assert_eq!(result, 4);
     }
 }
