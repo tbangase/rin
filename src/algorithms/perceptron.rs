@@ -23,10 +23,12 @@ pub struct Perceptron {
 }
 
 impl Perceptron {
+    /// Fit (learn) with data
     pub fn fit(&mut self, x: &Array2<f64>, y: &Array1<f64>) -> Result<()> {
-        if x.shape()[1] != y.len() {
-            anyhow::bail!("Training Data of x and Label y has different shape.");
-        }
+        anyhow::ensure!(
+            x.shape()[1] == y.len(),
+            "Training Data of x and Label y has different shape."
+        );
 
         self.weights = non_zero_init_array(1 + x.shape()[1]);
         self.errors.clear();
@@ -53,11 +55,13 @@ impl Perceptron {
         Ok(())
     }
 
+    /// ??
     pub fn net_input(&self, x: ArrayView1<f64>) -> f64 {
         let expanded_x = concatenate![Axis(0), array![0.], x];
         expanded_x.dot(&self.weights)
     }
 
+    /// Predict with fitted model
     pub fn predict(&self, x: ArrayView1<f64>) -> f64 {
         if self.net_input(x) >= 0.0 {
             1.0
@@ -73,7 +77,7 @@ mod perceptron_test {
 
     #[test]
     fn test_normal_perceptron() -> Result<()> {
-        let mut p = Perceptron::builder().build();
+        let mut p = Perceptron::builder().train_num(50).build();
 
         let x = Array2::from(vec![[1., 2., 3.], [4., 5., 6.], [7., 8., 9.]]);
         let y = array![1., 1., -1.];
@@ -93,10 +97,7 @@ mod perceptron_test {
         let x = Array2::from(vec![[1., 2., 3.], [4., 5., 6.], [7., 8., 9.]]);
         let y = array![1., 1., -1., -1.];
 
-        match p.fit(&x, &y) {
-            Ok(_) => assert!(false),
-            Err(_) => assert!(true),
-        }
+        assert!(p.fit(&x, &y).is_err());
 
         Ok(())
     }

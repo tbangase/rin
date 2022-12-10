@@ -2,8 +2,9 @@ extern crate ndarray;
 use std::time::Instant;
 
 use ndarray::prelude::*;
-use rin::prelude::*;
+use rin::{non_zero_init_array, perceptron::Perceptron};
 
+// TODO: To be like CLI
 fn main() -> anyhow::Result<()> {
     tracing_subscriber::fmt::init();
     let start = Instant::now();

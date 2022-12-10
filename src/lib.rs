@@ -1,4 +1,7 @@
-pub mod decision_functions;
-pub mod utils;
-pub mod algorithms;
-pub mod prelude;
+mod algorithms;
+mod decision_functions;
+mod utils;
+
+pub use algorithms::*;
+pub use decision_functions::*;
+pub use utils::*;
