@@ -1,13 +1,13 @@
 use derive_getters::Getters;
 use typed_builder::TypedBuilder;
 
+use super::Perceptron;
 use crate::utils::non_zero_init_array;
 
-use anyhow::Result;
-use ndarray::{concatenate, prelude::*};
+use ndarray::{array, concatenate, Array1, Array2, ArrayView1, Axis};
 
 #[derive(Debug, Clone, Default, Getters, TypedBuilder)]
-pub struct Perceptron {
+pub struct SimplePerceptron {
     // 学習率: η
     #[builder(default = 0.1)]
     learning_rate: f64,
@@ -22,9 +22,8 @@ pub struct Perceptron {
     errors: Vec<f64>,
 }
 
-impl Perceptron {
-    /// Fit (learn) with data
-    pub fn fit(&mut self, x: &Array2<f64>, y: &Array1<f64>) -> Result<()> {
+impl Perceptron for SimplePerceptron {
+    fn fit(&mut self, x: &Array2<f64>, y: &Array1<f64>) -> anyhow::Result<()> {
         anyhow::ensure!(
             x.shape()[1] == y.len(),
             "Training Data of x and Label y has different shape."
@@ -55,14 +54,12 @@ impl Perceptron {
         Ok(())
     }
 
-    /// ??
-    pub fn net_input(&self, x: ArrayView1<f64>) -> f64 {
+    fn net_input(&self, x: ArrayView1<f64>) -> f64 {
         let expanded_x = concatenate![Axis(0), array![0.], x];
         expanded_x.dot(&self.weights)
     }
 
-    /// Predict with fitted model
-    pub fn predict(&self, x: ArrayView1<f64>) -> f64 {
+    fn predict(&self, x: ArrayView1<f64>) -> f64 {
         if self.net_input(x) >= 0.0 {
             1.0
         } else {
@@ -76,8 +73,8 @@ mod perceptron_test {
     use super::*;
 
     #[test]
-    fn test_normal_perceptron() -> Result<()> {
-        let mut p = Perceptron::builder().train_num(50).build();
+    fn test_normal_perceptron() -> anyhow::Result<()> {
+        let mut p = SimplePerceptron::builder().train_num(50).build();
 
         let x = Array2::from(vec![[1., 2., 3.], [4., 5., 6.], [7., 8., 9.]]);
         let y = array![1., 1., -1.];
@@ -91,8 +88,8 @@ mod perceptron_test {
     }
 
     #[test]
-    fn test_wrong_size_handling() -> Result<()> {
-        let mut p = Perceptron::builder().build();
+    fn test_wrong_size_handling() -> anyhow::Result<()> {
+        let mut p = SimplePerceptron::builder().build();
 
         let x = Array2::from(vec![[1., 2., 3.], [4., 5., 6.], [7., 8., 9.]]);
         let y = array![1., 1., -1., -1.];

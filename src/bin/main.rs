@@ -2,7 +2,7 @@ extern crate ndarray;
 use std::time::Instant;
 
 use ndarray::prelude::*;
-use rin::{non_zero_init_array, perceptron::Perceptron};
+use rin::{non_zero_init_array, Perceptron, SimplePerceptron};
 
 // TODO: To be like CLI
 fn main() -> anyhow::Result<()> {
@@ -32,7 +32,7 @@ fn main() -> anyhow::Result<()> {
     tracing::debug!("\n{:?}", array1);
     tracing::debug!("\n{:?}", non_zero_array);
 
-    let mut p = Perceptron::builder()
+    let mut p = SimplePerceptron::builder()
         .learning_rate(0.01)
         .train_num(100)
         .build();
